@@ -64,13 +64,13 @@ else
         rm -rf universal-clipboard
     fi
     
-    git clone https://github.com/universalclip/sync.git universal-clipboard
+    git clone https://github.com/Shionjee7/universal-clipboard.git universal-clipboard
     cd universal-clipboard || exit 1
     npm install
     
     # Create global command
     echo "#!/bin/bash" > ~/universal-clipboard
-    echo "node \"$(pwd)/index.js\" \"\$@\"" >> ~/universal-clipboard
+    echo "node \"$(pwd)/simple-server.js\" \"\$@\"" >> ~/universal-clipboard
     chmod +x ~/universal-clipboard
     
     # Add to PATH in shell profiles
@@ -131,7 +131,6 @@ cat > ~/Library/LaunchAgents/com.universalclip.sync.plist << EOF
     <key>ProgramArguments</key>
     <array>
         <string>$(which universal-clipboard)</string>
-        <string>start</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

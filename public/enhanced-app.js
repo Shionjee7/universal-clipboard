@@ -495,11 +495,41 @@ class EnhancedUniversalClipboard {
             clearInterval(this.clipboardMonitorInterval);
         }
         
-        console.log('📋 Starting automatic clipboard monitoring');
+        console.log('🚀 Starting ENHANCED clipboard monitoring for Mac/iOS');
         
+        // Strategy 1: Fast continuous polling
         this.clipboardMonitorInterval = setInterval(async () => {
             await this.checkClipboardChange();
-        }, this.monitoringFrequency);
+        }, 500); // Faster 500ms polling
+        
+        // Strategy 2: Focus-based checking (Mac Safari works great with this)
+        window.addEventListener('focus', async () => {
+            console.log('🎯 Window focused - checking clipboard');
+            await this.checkClipboardChange();
+        });
+        
+        // Strategy 3: User interaction triggers
+        document.addEventListener('click', async () => {
+            await this.checkClipboardChange();
+        });
+        
+        // Strategy 4: Keyboard shortcuts detection
+        document.addEventListener('keyup', async (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+                console.log('📋 Copy shortcut detected!');
+                setTimeout(() => this.checkClipboardChange(), 100);
+            }
+        });
+        
+        // Strategy 5: Visibility change detection
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) {
+                console.log('📄 Page visible - checking clipboard');
+                await this.checkClipboardChange();
+            }
+        });
+        
+        this.showNotification('🚀 ENHANCED Mac/iOS clipboard monitoring active!', 'success');
     }
 
     stopClipboardMonitoring() {
@@ -519,20 +549,28 @@ class EnhancedUniversalClipboard {
             const contentHash = this.generateHash(content);
             
             if (contentHash !== this.lastContentHash && content && content.length > 0) {
-                console.log('📋 Local clipboard change detected:', content.substring(0, 50));
+                console.log('🚀 MAC CLIPBOARD DETECTED:', content.substring(0, 50));
                 
-                // Send to server
+                // Send to server with enhanced data
                 this.socket.emit('clipboard-update', {
                     content: content,
-                    timestamp: Date.now()
-                    // Don't set autoWrite to false - let other devices auto-sync
+                    timestamp: Date.now(),
+                    from: 'mac-browser',
+                    autoWrite: true // Enable auto-paste on other devices
                 });
                 
                 this.lastContent = content;
                 this.lastContentHash = contentHash;
-                this.updateClipboardPreview(content, 'local');
+                this.updateClipboardPreview(content, 'mac-local');
                 
-                this.showNotification('📋 Clipboard synced to all devices', 'success');
+                // Flash screen to indicate successful detection
+                this.flashScreen();
+                
+                this.showNotification('🚀 ✅ MAC CLIPBOARD SYNCED to all devices!', 'success');
+                
+                // Update sync counter
+                this.syncCount++;
+                this.lastSyncTime = Date.now();
             }
         } catch (error) {
             // Permission denied or other error - ignore silently for now

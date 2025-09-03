@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚀 Mac Clipboard Test - Universal Clipboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .status {
+            font-size: 1.2em;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .success { background: rgba(40, 167, 69, 0.8); }
+        .warning { background: rgba(255, 193, 7, 0.8); }
+        .error { background: rgba(220, 53, 69, 0.8); }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        #clipboardContent {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 100px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            word-wrap: break-word;
+        }
+        
+        .flash {
+            animation: flash 0.5s ease-in-out;
+        }
+        
+        @keyframes flash {
+            0% { background: rgba(255,255,255,0.1); }
+            50% { background: rgba(0,255,0,0.3); }
+            100% { background: rgba(255,255,255,0.1); }
+        }
+        
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Mac Clipboard Test</h1>
+        
+        <div class="test-box">
+            <h2>📋 Clipboard Status</h2>
+            <div id="status" class="status warning">⏳ Checking clipboard access...</div>
+            
+            <div id="clipboardContent">
+                <em>Clipboard content will appear here...</em>
+            </div>
+            
+            <button onclick="testClipboard()">🔍 Check Clipboard Now</button>
+            <button onclick="requestPermissions()">🔐 Request Permissions</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>🧪 How to Test Mac Clipboard Sync:</h3>
+            
+            <div class="step">
+                <strong>1.</strong> Click "🔐 Request Permissions" and allow clipboard access
+            </div>
+            
+            <div class="step">
+                <strong>2.</strong> Copy some text anywhere on your Mac (⌘+C)
+            </div>
+            
+            <div class="step">
+                <strong>3.</strong> Watch this page - it should detect the change automatically!
+            </div>
+            
+            <div class="step">
+                <strong>4.</strong> The clipboard content should sync to your Windows PC and iPhone
+            </div>
+            
+            <div class="step">
+                <strong>5.</strong> Try copying on different devices to test bidirectional sync
+            </div>
+        </div>
+        
+        <div id="log" style="font-family: monospace; font-size: 0.9em; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 200px; overflow-y: auto;">
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+        let lastContent = '';
+        let lastContentHash = '';
+        let clipboardAPISupported = false;
+        let monitorInterval = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function generateHash(content) {
+            let hash = 0;
+            for (let i = 0; i < content.length; i++) {
+                const char = content.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+        
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function flashScreen() {
+            document.body.classList.add('flash');
+            setTimeout(() => document.body.classList.remove('flash'), 500);
+        }
+        
+        async function checkClipboardSupport() {
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    // Test read access
+                    await navigator.clipboard.readText();
+                    clipboardAPISupported = true;
+                    updateStatus('✅ Clipboard API supported and accessible!', 'success');
+                    log('✅ Clipboard API access granted');
+                    return true;
+                }
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    updateStatus('🔐 Clipboard access denied - click "Request Permissions"', 'warning');
+                    log('🔐 Clipboard permission denied');
+                } else {
+                    updateStatus('❌ Clipboard API not supported', 'error');
+                    log('❌ Clipboard API error: ' + error.message);
+                }
+            }
+            return false;
+        }
+        
+        async function requestPermissions() {
+            try {
+                // Try to access clipboard to trigger permission request
+                const content = await navigator.clipboard.readText();
+                clipboardAPISupported = true;
+                updateStatus('✅ Permissions granted! Auto-monitoring started.', 'success');
+                log('✅ Clipboard permissions granted');
+                startMonitoring();
+            } catch (error) {
+                updateStatus('❌ Permission request failed: ' + error.message, 'error');
+                log('❌ Permission request failed: ' + error.message);
+            }
+        }
+        
+        async function testClipboard() {
+            if (!clipboardAPISupported) {
+                updateStatus('❌ Clipboard access not available', 'error');
+                return;
+            }
+            
+            try {
+                const content = await navigator.clipboard.readText();
+                document.getElementById('clipboardContent').textContent = content || '(empty clipboard)';
+                log(`📋 Clipboard content: "${content?.substring(0, 50)}..."`);
+                
+                const contentHash = generateHash(content || '');
+                if (contentHash !== lastContentHash && content && content.length > 0) {
+                    flashScreen();
+                    
+                    // Send to Universal Clipboard server
+                    if (socket && socket.connected) {
+                        socket.emit('clipboard-update', {
+                            content: content,
+                            timestamp: Date.now(),
+                            from: 'mac-test-page',
+                            autoWrite: true
+                        });
+                        
+                        log('🚀 SENT TO UNIVERSAL CLIPBOARD SERVER!');
+                        updateStatus('🚀 ✅ Clipboard synced to all devices!', 'success');
+                    } else {
+                        log('⚠️ Not connected to Universal Clipboard server');
+                    }
+                    
+                    lastContent = content;
+                    lastContentHash = contentHash;
+                }
+                
+            } catch (error) {
+                updateStatus('❌ Failed to read clipboard: ' + error.message, 'error');
+                log('❌ Clipboard read error: ' + error.message);
+            }
+        }
+        
+        function startMonitoring() {
+            if (monitorInterval) {
+                clearInterval(monitorInterval);
+            }
+            
+            if (!clipboardAPISupported) return;
+            
+            log('🚀 Starting enhanced clipboard monitoring...');
+            
+            // Strategy 1: Fast polling
+            monitorInterval = setInterval(testClipboard, 500);
+            
+            // Strategy 2: Focus detection
+            window.addEventListener('focus', () => {
+                log('🎯 Window focused - checking clipboard');
+                testClipboard();
+            });
+            
+            // Strategy 3: Click detection
+            document.addEventListener('click', testClipboard);
+            
+            // Strategy 4: Key detection
+            document.addEventListener('keyup', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+                    log('📋 Copy shortcut detected!');
+                    setTimeout(testClipboard, 100);
+                }
+            });
+            
+            // Strategy 5: Visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    log('📄 Page visible - checking clipboard');
+                    testClipboard();
+                }
+            });
+            
+            updateStatus('🚀 Enhanced Mac clipboard monitoring active!', 'success');
+        }
+        
+        function connectToServer() {
+            try {
+                socket = io();
+                
+                socket.on('connect', () => {
+                    log('✅ Connected to Universal Clipboard server');
+                });
+                
+                socket.on('disconnect', () => {
+                    log('❌ Disconnected from Universal Clipboard server');
+                });
+                
+                socket.on('clipboard-update', (data) => {
+                    log(`📨 Received clipboard from ${data.from}: "${data.content?.substring(0, 50)}..."`);
+                    
+                    if (data.autoWrite && data.content !== lastContent) {
+                        // Auto-paste received content
+                        navigator.clipboard.writeText(data.content).then(() => {
+                            log('📋 ✅ Auto-pasted to Mac clipboard!');
+                            flashScreen();
+                        }).catch(err => {
+                            log('❌ Auto-paste failed: ' + err.message);
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                log('❌ Failed to connect to server: ' + error.message);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', async () => {
+            log('🔄 Initializing Mac Clipboard Test...');
+            
+            await checkClipboardSupport();
+            connectToServer();
+            
+            if (clipboardAPISupported) {
+                startMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>
