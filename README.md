@@ -3,7 +3,7 @@
 **One clipboard, all devices.** Copy on Windows, paste on Mac, sync with phone – instantly.
 
 [![npm version](https://badge.fury.io/js/%40universalclip%2Fsync.svg)](https://www.npmjs.com/package/@universalclip/sync)
-[![Platform Support](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)](https://github.com/universalclip/sync)
+[![Platform Support](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)](https://github.com/Shionjee7/universal-clipboard)
 
 ## ⚡ Quick Start
 
@@ -55,13 +55,13 @@ Automatically sets up system services, permissions, and startup entries.
 
 ### Windows CMD/PowerShell
 ```cmd
-curl -O https://raw.githubusercontent.com/universalclip/sync/main/install-windows.cmd
+curl -O https://raw.githubusercontent.com/Shionjee7/universal-clipboard/main/install-windows.cmd
 install-windows.cmd
 ```
 
 ### macOS/Linux Terminal
 ```bash
-curl -fsSL https://raw.githubusercontent.com/universalclip/sync/main/install-mac.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Shionjee7/universal-clipboard/main/install-mac.sh | bash
 ```
 
 ## 🚀 Usage
@@ -204,7 +204,7 @@ universal-clipboard start --debug
 Universal Clipboard is open source! Contributions welcome.
 
 ```bash
-git clone https://github.com/universalclip/sync.git
+git clone https://github.com/Shionjee7/universal-clipboard.git
 cd universal-clipboard
 npm install
 npm run dev
@@ -216,8 +216,8 @@ MIT License - feel free to use in personal and commercial projects.
 
 ## 🆘 Support
 
-- **GitHub Issues**: [Report bugs](https://github.com/universalclip/sync/issues)
-- **Documentation**: [Full docs](https://github.com/universalclip/sync/wiki)
+- **GitHub Issues**: [Report bugs](https://github.com/Shionjee7/universal-clipboard/issues)
+- **Documentation**: [Full docs](https://github.com/Shionjee7/universal-clipboard/wiki)
 - **Discord**: Community support coming soon
 
 ---

@@ -56,12 +56,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/universalclip/sync.git"
+    "url": "https://github.com/Shionjee7/universal-clipboard.git"
   },
   "bugs": {
-    "url": "https://github.com/universalclip/sync/issues"
+    "url": "https://github.com/Shionjee7/universal-clipboard/issues"
   },
-  "homepage": "https://github.com/universalclip/sync#readme",
+  "homepage": "https://github.com/Shionjee7/universal-clipboard#readme",
   "publishConfig": {
     "access": "public"
   }

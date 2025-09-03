@@ -8,7 +8,9 @@
       "Bash(cmd:*)",
       "Read(C:\\Users\\smichael\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup/**)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
