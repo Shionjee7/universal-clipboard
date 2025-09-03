@@ -111,6 +111,62 @@
                 </div>
             </div>
 
+            <!-- QR Code Connection Section -->
+            <div class="qr-section">
+                <div class="section-header">
+                    <h2>📱 Connect Phone</h2>
+                    <button id="refresh-qr" class="btn btn-sm btn-secondary">
+                        <span class="icon">🔄</span>
+                    </button>
+                </div>
+                
+                <div class="qr-container">
+                    <div class="qr-code-display">
+                        <div id="qr-code" class="qr-code-placeholder">
+                            <div class="qr-spinner">🔄</div>
+                            <p>Generating QR Code...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="qr-info">
+                        <h3>📲 Scan with Phone</h3>
+                        <div class="step-instructions">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <span class="step-text">Open camera on iPhone/Android</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <span class="step-text">Point at QR code</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">3</span>
+                                <span class="step-text">Tap notification to open</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">4</span>
+                                <span class="step-text">Allow clipboard permissions</span>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-url">
+                            <label>📡 Connection URL:</label>
+                            <div class="url-display">
+                                <input type="text" id="connection-url" readonly>
+                                <button id="copy-url" class="btn btn-sm btn-primary">
+                                    <span class="icon">📋</span>
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="network-info">
+                            <small>💡 Make sure your phone is on the same WiFi network</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Advanced Controls Section -->
             <div class="controls-section">
                 <div class="section-header">
@@ -340,6 +396,7 @@
     </script>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="enhanced-app.js"></script>
 </body>
 </html>

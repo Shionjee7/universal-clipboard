@@ -75,6 +75,12 @@ class EnhancedUniversalClipboard {
             deviceId: document.getElementById('device-id'),
             serverInfo: document.getElementById('server-info'),
             
+            // QR Code elements
+            qrCode: document.getElementById('qr-code'),
+            connectionUrl: document.getElementById('connection-url'),
+            copyUrl: document.getElementById('copy-url'),
+            refreshQr: document.getElementById('refresh-qr'),
+            
             // Modals and buttons
             fullContentModal: document.getElementById('full-content-modal'),
             fullContentText: document.getElementById('full-content-text'),
@@ -260,6 +266,18 @@ class EnhancedUniversalClipboard {
                 this.checkClipboardChange();
             }
         });
+        
+        // QR Code event listeners
+        if (this.elements.copyUrl) {
+            this.elements.copyUrl.addEventListener('click', () => this.copyConnectionUrl());
+        }
+        
+        if (this.elements.refreshQr) {
+            this.elements.refreshQr.addEventListener('click', () => this.generateQRCode());
+        }
+        
+        // Generate QR code when page loads
+        this.generateQRCode();
     }
 
     connect() {
@@ -968,6 +986,105 @@ class EnhancedUniversalClipboard {
         if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
         if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
         return `${Math.floor(diff / 86400)}d ago`;
+    }
+    
+    // QR Code Methods
+    getConnectionUrl() {
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port || (protocol === 'https:' ? '443' : '80');
+        
+        // Use the actual server port (usually 3000) instead of browser port
+        const serverPort = window.location.port || '3000';
+        return `${protocol}//${hostname}:${serverPort}`;
+    }
+    
+    async generateQRCode() {
+        if (!this.elements.qrCode) return;
+        
+        const connectionUrl = this.getConnectionUrl();
+        
+        // Update connection URL input
+        if (this.elements.connectionUrl) {
+            this.elements.connectionUrl.value = connectionUrl;
+        }
+        
+        // Show loading state
+        this.elements.qrCode.innerHTML = `
+            <div class="qr-spinner">🔄</div>
+            <p>Generating QR Code...</p>
+        `;
+        
+        try {
+            // Create QR code using qrcode library (if available)
+            if (typeof QRCode !== 'undefined') {
+                // Clear previous QR code
+                this.elements.qrCode.innerHTML = '';
+                
+                // Create canvas element
+                const canvas = document.createElement('canvas');
+                this.elements.qrCode.appendChild(canvas);
+                
+                // Generate QR code
+                QRCode.toCanvas(canvas, connectionUrl, {
+                    width: 180,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, (error) => {
+                    if (error) {
+                        throw error;
+                    }
+                    console.log('✅ QR Code generated for:', connectionUrl);
+                });
+            } else {
+                // Fallback: Generate QR code using online service
+                this.elements.qrCode.innerHTML = `
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(connectionUrl)}" 
+                         alt="QR Code" 
+                         style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                `;
+                console.log('✅ QR Code generated using online service for:', connectionUrl);
+            }
+        } catch (error) {
+            console.error('❌ Failed to generate QR code:', error);
+            this.elements.qrCode.innerHTML = `
+                <div style="text-align: center; color: var(--text-secondary);">
+                    <div style="font-size: 2em; margin-bottom: 12px;">⚠️</div>
+                    <p>Failed to generate QR code</p>
+                    <small>Use the connection URL instead</small>
+                </div>
+            `;
+        }
+    }
+    
+    async copyConnectionUrl() {
+        const connectionUrl = this.getConnectionUrl();
+        
+        try {
+            await navigator.clipboard.writeText(connectionUrl);
+            this.showNotification('📋 Connection URL copied to clipboard!', 'success');
+            
+            // Visual feedback on button
+            if (this.elements.copyUrl) {
+                const originalText = this.elements.copyUrl.innerHTML;
+                this.elements.copyUrl.innerHTML = '<span class="icon">✅</span> Copied!';
+                setTimeout(() => {
+                    this.elements.copyUrl.innerHTML = originalText;
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Failed to copy URL:', error);
+            
+            // Fallback: Select the URL input
+            if (this.elements.connectionUrl) {
+                this.elements.connectionUrl.select();
+                this.elements.connectionUrl.setSelectionRange(0, 99999); // Mobile devices
+                this.showNotification('📋 Connection URL selected - press Ctrl+C to copy', 'info');
+            }
+        }
     }
 }
 
