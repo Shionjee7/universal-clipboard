@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(node:*)",
+      "Bash(timeout:*)",
+      "Bash(install-windows.cmd)",
+      "Bash(cmd:*)",
+      "Read(C:\\Users\\smichael\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup/**)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

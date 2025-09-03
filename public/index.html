@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Clipboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📋</span>
+                <h1>Universal Clipboard</h1>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot" id="status-dot"></span>
+                <span class="status-text" id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="clipboard-section">
+                <div class="section-header">
+                    <h2>📄 Clipboard Content</h2>
+                    <div class="clipboard-actions">
+                        <button id="refresh-btn" class="btn btn-secondary" title="Refresh clipboard">
+                            <span class="icon">🔄</span>
+                        </button>
+                        <button id="clear-btn" class="btn btn-secondary" title="Clear clipboard">
+                            <span class="icon">🗑️</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="clipboard-container">
+                    <textarea 
+                        id="clipboard-content" 
+                        placeholder="Your clipboard content will appear here...&#10;&#10;💡 Tip: Any changes you make will sync automatically to all connected devices!"
+                        rows="8"
+                    ></textarea>
+                    
+                    <div class="clipboard-meta">
+                        <span class="last-updated" id="last-updated">Never updated</span>
+                        <span class="content-length" id="content-length">0 characters</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="copy-btn" class="btn btn-primary">
+                        <span class="icon">📋</span>
+                        Copy to Device
+                    </button>
+                    <button id="paste-btn" class="btn btn-secondary">
+                        <span class="icon">📥</span>
+                        Paste from Device
+                    </button>
+                    <button id="sync-btn" class="btn btn-accent">
+                        <span class="icon">🔄</span>
+                        Sync Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="devices-section">
+                <div class="section-header">
+                    <h2>📱 Connected Devices</h2>
+                    <span class="device-count" id="device-count">0 devices</span>
+                </div>
+                
+                <div class="devices-list" id="devices-list">
+                    <div class="no-devices">
+                        <span class="icon">📱</span>
+                        <p>No other devices connected</p>
+                        <small>Share the QR code or URL to connect more devices</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <h2>ℹ️ Connection Info</h2>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Device ID:</span>
+                        <span class="value" id="device-id">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Server:</span>
+                        <span class="value" id="server-info">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Platform:</span>
+                        <span class="value" id="platform-info">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Universal Clipboard - Cross-platform clipboard synchronization</p>
+            <div class="footer-links">
+                <button id="help-btn" class="link-btn">Help</button>
+                <button id="about-btn" class="link-btn">About</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-container" id="notifications"></div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>❓ Help & Tips</h3>
+                <button class="modal-close" onclick="closeModal('help-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <h4>📋 How to use Universal Clipboard:</h4>
+                <ul>
+                    <li><strong>Automatic Sync:</strong> Copy text on any device, and it automatically appears on all connected devices</li>
+                    <li><strong>Manual Sync:</strong> Use the "Sync Now" button to force synchronization</li>
+                    <li><strong>Copy/Paste:</strong> Use the buttons to copy content to your device's clipboard or paste from it</li>
+                    <li><strong>Connect Devices:</strong> Share the QR code or URL from the desktop app</li>
+                </ul>
+                
+                <h4>🔧 Troubleshooting:</h4>
+                <ul>
+                    <li>If sync isn't working, try clicking "Sync Now"</li>
+                    <li>Check that all devices are on the same network</li>
+                    <li>Refresh the page if connection is lost</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📋 About Universal Clipboard</h3>
+                <button class="modal-close" onclick="closeModal('about-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p><strong>Universal Clipboard</strong> is a cross-platform clipboard synchronization tool that works across Windows, Mac, Linux, iOS, and Android devices.</p>
+                
+                <h4>🔒 Privacy & Security:</h4>
+                <ul>
+                    <li>All data stays on your local network</li>
+                    <li>No cloud storage or internet connection required</li>
+                    <li>No data persistence - everything is memory-only</li>
+                    <li>Secure local network communication</li>
+                </ul>
+                
+                <h4>✨ Features:</h4>
+                <ul>
+                    <li>Real-time clipboard synchronization</li>
+                    <li>Automatic device discovery</li>
+                    <li>Cross-platform support</li>
+                    <li>No app installation required for mobile</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

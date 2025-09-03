@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Clipboard Enhanced</title>
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="manifest" href="enhanced-manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🚀</span>
+                <h1>Universal Clipboard <span class="enhanced-badge">Enhanced</span></h1>
+            </div>
+            <div class="status-section">
+                <div class="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span class="status-text" id="status-text">Connecting...</span>
+                </div>
+                <div class="auto-sync-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-sync-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Auto Sync</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Live Clipboard Section -->
+            <div class="live-clipboard-section">
+                <div class="section-header">
+                    <h2>📋 Live Clipboard</h2>
+                    <div class="clipboard-stats">
+                        <span class="sync-count" id="sync-count">0 syncs</span>
+                        <span class="last-sync" id="last-sync">Never</span>
+                    </div>
+                </div>
+                
+                <div class="live-clipboard-container">
+                    <div class="clipboard-preview" id="clipboard-preview">
+                        <div class="preview-content">
+                            <div class="preview-text" id="preview-text">Waiting for clipboard content...</div>
+                            <div class="preview-meta">
+                                <span class="content-length" id="content-length">0 chars</span>
+                                <span class="content-source" id="content-source">No source</span>
+                            </div>
+                        </div>
+                        <div class="preview-actions">
+                            <button id="copy-to-device" class="btn btn-primary" title="Copy to device clipboard">
+                                <span class="icon">📋</span>
+                                Copy to Device
+                            </button>
+                            <button id="view-full" class="btn btn-secondary" title="View full content">
+                                <span class="icon">👁️</span>
+                                View Full
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="auto-sync-status" id="auto-sync-status">
+                        <span class="sync-icon">🔄</span>
+                        <span class="sync-text">Automatic sync active - clipboard changes sync instantly</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clipboard History Section -->
+            <div class="history-section">
+                <div class="section-header">
+                    <h2>📚 Clipboard History</h2>
+                    <div class="history-controls">
+                        <button id="refresh-history" class="btn btn-sm btn-secondary">
+                            <span class="icon">🔄</span>
+                        </button>
+                        <button id="clear-history" class="btn btn-sm btn-danger">
+                            <span class="icon">🗑️</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="history-list" id="history-list">
+                    <div class="no-history">
+                        <span class="icon">📚</span>
+                        <p>No clipboard history yet</p>
+                        <small>Copy some text to start building history</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connected Devices Section -->
+            <div class="devices-section">
+                <div class="section-header">
+                    <h2>📱 Connected Devices</h2>
+                    <span class="device-count" id="device-count">0 devices</span>
+                </div>
+                
+                <div class="devices-grid" id="devices-grid">
+                    <div class="no-devices">
+                        <span class="icon">📱</span>
+                        <p>No other devices connected</p>
+                        <small>Share QR code or URL to connect more devices</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Controls Section -->
+            <div class="controls-section">
+                <div class="section-header">
+                    <h2>⚙️ Advanced Controls</h2>
+                </div>
+                
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Clipboard Monitoring</label>
+                        <div class="control-actions">
+                            <button id="force-sync" class="btn btn-accent">Force Sync</button>
+                            <button id="test-clipboard" class="btn btn-secondary">Test Access</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Performance</label>
+                        <div class="performance-stats">
+                            <div class="stat">
+                                <span class="stat-value" id="ping-time">--ms</span>
+                                <span class="stat-label">Ping</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="sync-rate">--/min</span>
+                                <span class="stat-label">Sync Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p><strong>Enhanced Universal Clipboard</strong> - Automatic cross-platform sync</p>
+                    <div class="footer-stats">
+                        <span>Device ID: <code id="device-id">Loading...</code></span>
+                        <span>Server: <code id="server-info">Loading...</code></span>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <button id="settings-btn" class="link-btn">⚙️ Settings</button>
+                    <button id="help-btn" class="link-btn">❓ Help</button>
+                    <button id="about-btn" class="link-btn">ℹ️ About</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notification-container" id="notifications"></div>
+
+    <!-- Full Content Modal -->
+    <div class="modal-overlay" id="full-content-modal">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h3>📋 Full Clipboard Content</h3>
+                <button class="modal-close" onclick="closeModal('full-content-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="full-content-wrapper">
+                    <textarea id="full-content-text" readonly></textarea>
+                    <div class="full-content-actions">
+                        <button id="copy-full-content" class="btn btn-primary">Copy to Device</button>
+                        <button id="select-all-content" class="btn btn-secondary">Select All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>⚙️ Enhanced Settings</h3>
+                <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label>Auto Sync Settings</label>
+                        <div class="setting-controls">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-auto-sync" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enable automatic clipboard synchronization</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Background Monitoring</label>
+                        <div class="setting-controls">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-background-monitor" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Monitor clipboard changes in background</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Notifications</label>
+                        <div class="setting-controls">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="setting-notifications" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Show sync notifications</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Clipboard Access Test</label>
+                        <div class="setting-controls">
+                            <button id="test-clipboard-access" class="btn btn-primary">Test Access</button>
+                            <span class="access-status" id="clipboard-access-status">Not tested</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                    <button id="reset-settings" class="btn btn-secondary">Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>❓ Enhanced Help</h3>
+                <button class="modal-close" onclick="closeModal('help-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <h4>🚀 Automatic Clipboard Sync</h4>
+                <ul>
+                    <li><strong>Automatic:</strong> Copy text anywhere - it instantly syncs to all devices</li>
+                    <li><strong>Background:</strong> Works invisibly in the background</li>
+                    <li><strong>Real-time:</strong> Changes sync within 1-2 seconds</li>
+                    <li><strong>History:</strong> Access last 10 clipboard items</li>
+                </ul>
+                
+                <h4>📱 Mobile Usage</h4>
+                <ul>
+                    <li><strong>Automatic Access:</strong> Clipboard automatically syncs with your device</li>
+                    <li><strong>Background Monitoring:</strong> Page monitors clipboard changes</li>
+                    <li><strong>Manual Copy:</strong> Use "Copy to Device" if needed</li>
+                    <li><strong>Keep Page Open:</strong> For best results, keep page open in background</li>
+                </ul>
+                
+                <h4>🔧 Troubleshooting</h4>
+                <ul>
+                    <li><strong>Grant Permissions:</strong> Allow clipboard access when prompted</li>
+                    <li><strong>Test Access:</strong> Use "Test Clipboard Access" in settings</li>
+                    <li><strong>Force Sync:</strong> Click "Force Sync" if sync stops</li>
+                    <li><strong>Check Connection:</strong> Ensure stable network connection</li>
+                </ul>
+                
+                <h4>⚡ Performance Tips</h4>
+                <ul>
+                    <li><strong>Background Tab:</strong> Page works even when minimized</li>
+                    <li><strong>Service Worker:</strong> Background sync (where supported)</li>
+                    <li><strong>Auto Sync:</strong> Toggle off if experiencing issues</li>
+                    <li><strong>History:</strong> Recent items load faster</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>ℹ️ About Enhanced Universal Clipboard</h3>
+                <button class="modal-close" onclick="closeModal('about-modal')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p><strong>Enhanced Universal Clipboard v2.0</strong> - The next generation of cross-platform clipboard synchronization.</p>
+                
+                <h4>✨ Enhanced Features</h4>
+                <ul>
+                    <li><strong>Automatic Sync:</strong> No manual intervention needed</li>
+                    <li><strong>Fast Polling:</strong> 100ms clipboard monitoring</li>
+                    <li><strong>Smart Filtering:</strong> Blocks sensitive content automatically</li>
+                    <li><strong>Conflict Resolution:</strong> Handles simultaneous changes intelligently</li>
+                    <li><strong>Clipboard History:</strong> Access last 10 items</li>
+                    <li><strong>Background Service:</strong> Works invisibly</li>
+                </ul>
+                
+                <h4>🔒 Enhanced Privacy & Security</h4>
+                <ul>
+                    <li><strong>Local Network Only:</strong> No internet required</li>
+                    <li><strong>Content Filtering:</strong> Blocks passwords and sensitive data</li>
+                    <li><strong>No Persistence:</strong> History cleared on restart</li>
+                    <li><strong>Smart Detection:</strong> Avoids syncing sensitive patterns</li>
+                    <li><strong>Conflict Resolution:</strong> Prevents infinite loops</li>
+                </ul>
+                
+                <h4>⚡ Performance Optimizations</h4>
+                <ul>
+                    <li><strong>Bandwidth Optimization:</strong> Efficient sync protocols</li>
+                    <li><strong>Smart Queuing:</strong> Handles rapid changes</li>
+                    <li><strong>Loop Prevention:</strong> Avoids redundant syncs</li>
+                    <li><strong>Fast Detection:</strong> Near-instant sync</li>
+                </ul>
+                
+                <div class="about-footer">
+                    <p><strong>Version:</strong> 2.0.0 Enhanced</p>
+                    <p><strong>Platform:</strong> Universal Web + Native</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="enhanced-app.js"></script>
+</body>
+</html>

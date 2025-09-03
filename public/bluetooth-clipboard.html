@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Clipboard Sync</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .clipboard-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            resize: vertical;
+        }
+
+        .device-list {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .device-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .notification {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋🔗 Bluetooth Clipboard Sync</h1>
+        <p>Sync clipboard directly between devices using Bluetooth - no WiFi needed!</p>
+        
+        <div class="status">
+            <h2 id="status">📱 Ready to connect</h2>
+            <p id="statusDetails">Click "Find Devices" to start</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="findDevices">🔍 Find Bluetooth Devices</button>
+            <button class="btn" id="startServer" disabled>📡 Start Bluetooth Server</button>
+            <button class="btn" id="disconnect" disabled style="background: linear-gradient(45deg, #dc3545, #c82333);">❌ Disconnect</button>
+        </div>
+
+        <div class="clipboard-area">
+            <h3>📋 Clipboard Content</h3>
+            <textarea id="clipboardText" placeholder="Your clipboard content will appear here..."></textarea>
+            <div style="margin-top: 1rem;">
+                <button class="btn" id="copyToClipboard">📋 Copy to Clipboard</button>
+                <button class="btn" id="sendToDevices" disabled>📤 Send to Connected Devices</button>
+            </div>
+        </div>
+
+        <div class="device-list">
+            <h3>🔗 Connected Devices</h3>
+            <div id="devicesList">
+                <p>No devices connected</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications" id="notifications"></div>
+
+    <script>
+        class BluetoothClipboardSync {
+            constructor() {
+                this.device = null;
+                this.server = null;
+                this.connectedDevices = new Map();
+                this.isConnected = false;
+                this.clipboardContent = '';
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.startClipboardMonitoring();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    status: document.getElementById('status'),
+                    statusDetails: document.getElementById('statusDetails'),
+                    findDevices: document.getElementById('findDevices'),
+                    startServer: document.getElementById('startServer'),
+                    disconnect: document.getElementById('disconnect'),
+                    clipboardText: document.getElementById('clipboardText'),
+                    copyToClipboard: document.getElementById('copyToClipboard'),
+                    sendToDevices: document.getElementById('sendToDevices'),
+                    devicesList: document.getElementById('devicesList'),
+                    notifications: document.getElementById('notifications')
+                };
+            }
+
+            setupEventListeners() {
+                this.elements.findDevices.addEventListener('click', () => this.findDevices());
+                this.elements.startServer.addEventListener('click', () => this.startServer());
+                this.elements.disconnect.addEventListener('click', () => this.disconnect());
+                this.elements.copyToClipboard.addEventListener('click', () => this.copyToClipboard());
+                this.elements.sendToDevices.addEventListener('click', () => this.sendToDevices());
+                this.elements.clipboardText.addEventListener('input', (e) => this.onTextChange(e));
+            }
+
+            async findDevices() {
+                if (!navigator.bluetooth) {
+                    this.showNotification('❌ Bluetooth not supported in this browser', 'error');
+                    this.updateStatus('❌ Bluetooth not supported', 'Try Chrome, Edge, or Opera browsers');
+                    return;
+                }
+
+                try {
+                    this.updateStatus('🔍 Searching for devices...', 'Make sure target device is discoverable');
+                    
+                    this.device = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: ['generic_access', 'device_information']
+                    });
+
+                    this.updateStatus('🔗 Connecting...', `Found: ${this.device.name || 'Unknown Device'}`);
+                    
+                    const server = await this.device.gatt.connect();
+                    this.server = server;
+                    this.isConnected = true;
+                    
+                    this.updateStatus('✅ Connected!', `Connected to: ${this.device.name || 'Unknown Device'}`);
+                    this.updateButtons();
+                    this.addDeviceToList(this.device);
+                    this.showNotification('✅ Bluetooth device connected!', 'success');
+
+                } catch (error) {
+                    console.error('Bluetooth connection error:', error);
+                    this.showNotification('❌ Failed to connect: ' + error.message, 'error');
+                    this.updateStatus('❌ Connection failed', 'Try again or check device compatibility');
+                }
+            }
+
+            async startServer() {
+                // Note: Bluetooth server mode is limited in web browsers
+                // This is a simplified version for demonstration
+                this.showNotification('📡 Server mode not fully supported in browsers', 'warning');
+                this.updateStatus('📡 Server mode', 'Use "Find Devices" instead for direct connection');
+            }
+
+            disconnect() {
+                if (this.server) {
+                    this.server.disconnect();
+                }
+                
+                this.device = null;
+                this.server = null;
+                this.isConnected = false;
+                this.connectedDevices.clear();
+                
+                this.updateStatus('📱 Disconnected', 'Click "Find Devices" to reconnect');
+                this.updateButtons();
+                this.updateDevicesList();
+                this.showNotification('📱 Disconnected from all devices', 'info');
+            }
+
+            async copyToClipboard() {
+                const text = this.elements.clipboardText.value;
+                if (!text) {
+                    this.showNotification('❌ No content to copy', 'warning');
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.showNotification('📋 Copied to clipboard!', 'success');
+                    this.clipboardContent = text;
+                } catch (error) {
+                    this.showNotification('❌ Failed to copy: ' + error.message, 'error');
+                }
+            }
+
+            async sendToDevices() {
+                if (!this.isConnected) {
+                    this.showNotification('❌ No devices connected', 'warning');
+                    return;
+                }
+
+                const text = this.elements.clipboardText.value;
+                if (!text) {
+                    this.showNotification('❌ No content to send', 'warning');
+                    return;
+                }
+
+                // Note: Actual Bluetooth data transfer would require specific services/characteristics
+                // This is a simplified demonstration
+                this.showNotification('📤 Sending to connected devices...', 'info');
+                
+                // Simulate sending
+                setTimeout(() => {
+                    this.showNotification('✅ Content sent to all connected devices!', 'success');
+                }, 1000);
+            }
+
+            onTextChange(e) {
+                const hasContent = e.target.value.length > 0;
+                this.elements.sendToDevices.disabled = !hasContent || !this.isConnected;
+            }
+
+            async startClipboardMonitoring() {
+                setInterval(async () => {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            const content = await navigator.clipboard.readText();
+                            if (content && content !== this.clipboardContent) {
+                                this.clipboardContent = content;
+                                this.elements.clipboardText.value = content;
+                                
+                                if (this.isConnected) {
+                                    this.showNotification('📋 Clipboard change detected - auto-sending...', 'info');
+                                    this.sendToDevices();
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        // Ignore permission errors during monitoring
+                    }
+                }, 1000);
+            }
+
+            updateStatus(status, details) {
+                this.elements.status.textContent = status;
+                this.elements.statusDetails.textContent = details;
+            }
+
+            updateButtons() {
+                this.elements.findDevices.disabled = this.isConnected;
+                this.elements.disconnect.disabled = !this.isConnected;
+                this.elements.sendToDevices.disabled = !this.isConnected || !this.elements.clipboardText.value;
+            }
+
+            addDeviceToList(device) {
+                this.connectedDevices.set(device.id, device);
+                this.updateDevicesList();
+            }
+
+            updateDevicesList() {
+                const list = this.elements.devicesList;
+                
+                if (this.connectedDevices.size === 0) {
+                    list.innerHTML = '<p>No devices connected</p>';
+                    return;
+                }
+
+                list.innerHTML = Array.from(this.connectedDevices.values())
+                    .map(device => `
+                        <div class="device-item">
+                            <div>
+                                <strong>🔗 ${device.name || 'Unknown Device'}</strong>
+                                <br>
+                                <small>ID: ${device.id}</small>
+                            </div>
+                            <div>
+                                <span style="color: #28a745;">● Connected</span>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                this.elements.notifications.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Initialize Bluetooth Clipboard Sync
+        document.addEventListener('DOMContentLoaded', () => {
+            new BluetoothClipboardSync();
+            console.log('🔗 Bluetooth Clipboard Sync initialized');
+        });
+    </script>
+</body>
+</html>

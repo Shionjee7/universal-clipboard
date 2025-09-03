@@ -1,0 +1,3 @@
+# This would be a 512x512 PNG file - for now creating a placeholder
+# In a real deployment, you would create actual PNG icons
+# SVG-based fallback can be used in the HTML if needed

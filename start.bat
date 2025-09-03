@@ -1,0 +1,3 @@
+@echo off
+echo Starting Universal Clipboard...
+node index.js start %*

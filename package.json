@@ -1,0 +1,68 @@
+{
+  "name": "@universalclip/sync",
+  "version": "1.0.0",
+  "description": "🚀 Universal clipboard sync across all devices - Windows, Mac, Linux, iOS, Android. Install once, works everywhere!",
+  "main": "index.js",
+  "bin": {
+    "universal-clipboard": "./index.js",
+    "uclip": "./index.js"
+  },
+  "keywords": [
+    "clipboard",
+    "sync",
+    "cross-platform",
+    "universal",
+    "mobile",
+    "desktop",
+    "websocket",
+    "windows",
+    "mac",
+    "linux",
+    "ios",
+    "android",
+    "automatic",
+    "realtime"
+  ],
+  "author": "Universal Clipboard Team",
+  "license": "MIT",
+  "preferGlobal": true,
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "clipboardy": "^4.0.0",
+    "qrcode": "^1.5.3",
+    "mdns": "^2.7.2",
+    "commander": "^11.0.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "boxen": "^5.1.2",
+    "qrcode-terminal": "^0.12.0",
+    "node-machine-id": "^1.1.12",
+    "open": "^8.4.0"
+  },
+  "optionalDependencies": {
+    "mdns": "^2.7.2"
+  },
+  "scripts": {
+    "start": "node index.js start",
+    "setup": "node setup.js",
+    "install-global": "npm install -g .",
+    "dev": "node index.js start --port 3001",
+    "test": "node test-server.js",
+    "postinstall": "node setup.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/universalclip/sync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/universalclip/sync/issues"
+  },
+  "homepage": "https://github.com/universalclip/sync#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
